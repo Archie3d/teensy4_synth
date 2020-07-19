@@ -77,7 +77,7 @@ void Reverb::process (const float *inL, const float *inR, float *outL, float *ou
         params[PITCH].nextValue();
         params[FEEDBACK].nextValue();
 
-        const auto width = params[WIDTH].nextValue();
+        const auto width = 1.0f; //params[WIDTH].nextValue();
         const auto dry = params[DRY].nextValue();
         const auto wet = params[WET].nextValue();
         const auto wet1 = wet * (width * 0.5f + 0.5f);

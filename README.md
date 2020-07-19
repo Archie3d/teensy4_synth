@@ -29,3 +29,8 @@ This will build the code and program the board. No need to run Arduino IDE.
 
 ## Playing
 Currently the code enabled USB MIDI and Serial interfaces. When board is connected via USB cable you should see `Teensy MIDI` interface where you can send MIDI commands to. USB virtual serial port is used to print debug info.
+
+## Example output
+Recorded directly fromt eh audio output.
+
+https://soundcloud.com/arthur-benilov/moszkowski-etincelles-op-36-no-6

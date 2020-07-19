@@ -1,4 +1,5 @@
 .vscode/
+mp3/
 *.a
 *.o
 *.d

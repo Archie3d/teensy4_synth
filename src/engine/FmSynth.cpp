@@ -118,7 +118,9 @@ FmInstrument::FmInstrument()
     m_delay.parameters()[fx::Delay::DELAY].setValue(0.2f, true);
     m_delay.parameters()[fx::Delay::WET].setValue(0.5f, true);
 
-    m_reverb.parameters()[fx::Reverb::ROOM_SIZE].setValue(0.8f, true);
+    m_reverb.parameters()[fx::Reverb::WET].setValue(0.2f, true);
+    m_reverb.parameters()[fx::Reverb::ROOM_SIZE].setValue(0.95f, true);
+    m_reverb.parameters()[fx::Reverb::WIDTH].setValue(1.0f, true);
     m_reverb.parameters()[fx::Reverb::PITCH].setValue(2.0f, true);
-    m_reverb.parameters()[fx::Reverb::FEEDBACK].setValue(0.01f, true);
+    m_reverb.parameters()[fx::Reverb::FEEDBACK].setValue(0.02f, true);
 }
