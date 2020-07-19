@@ -6,7 +6,7 @@
 #include "engine/Envelope.h"
 #include "engine/Instrument.h"
 
-#include "engine/FX_LowPass.h"
+#include "engine/FX_Delay.h"
 #include "engine/FX_Reverb.h"
 
 class FmVoice : public Voice,
@@ -59,5 +59,6 @@ private:
 
     using Parent = Instrument<FmVoice, 32>;
 
+    fx::Delay m_delay;
     fx::Reverb m_reverb;
 };

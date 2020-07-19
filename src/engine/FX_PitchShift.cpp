@@ -30,17 +30,17 @@ void PitchShift::init()
     filterSpec.sampleRate = globals::SAMPLE_RATE;
     updateFilter();
 
-    dsp::BiquadFilter::resetState (filterSpec, filterL);
-    dsp::BiquadFilter::resetState (filterSpec, filterR);
+    dsp::BiquadFilter::resetState(filterSpec, filterL);
+    dsp::BiquadFilter::resetState(filterSpec, filterR);
 
     dcBlockSpec.alpha = 0.995f;
-    dsp::DCBlocker::resetState (dcBlockSpec, dcBlockL);
-    dsp::DCBlocker::resetState (dcBlockSpec, dcBlockR);
+    dsp::DCBlocker::resetState(dcBlockSpec, dcBlockL);
+    dsp::DCBlocker::resetState(dcBlockSpec, dcBlockR);
 
     const auto maxDelaySamples = (size_t) (globals::SAMPLE_RATE * MaxDelay);
 
-    delayL.resize (maxDelaySamples);
-    delayR.resize (maxDelaySamples); 
+    delayL.resize(maxDelaySamples);
+    delayR.resize(maxDelaySamples); 
 
     dA = 0.0f;
     dB = 0.5f * delayL.size();
@@ -59,10 +59,10 @@ void PitchShift::process(const float *inL, const float *inR, float *outL, float 
         const auto wet = params[WET].nextValue();
         const auto p = 1.0f - params[PITCH].nextValue();
 
-        delayL.write (dsp::BiquadFilter::tick (filterSpec, filterL,
-                                               dsp::DCBlocker::tick(dcBlockSpec, dcBlockL, inL[i])));
-        delayR.write (dsp::BiquadFilter::tick (filterSpec, filterR,
-                                               dsp::DCBlocker::tick(dcBlockSpec, dcBlockR, inR[i])));
+        delayL.write(dsp::BiquadFilter::tick(filterSpec, filterL,
+                                             dsp::DCBlocker::tick(dcBlockSpec, dcBlockL, inL[i])));
+        delayR.write(dsp::BiquadFilter::tick(filterSpec, filterR,
+                                             dsp::DCBlocker::tick(dcBlockSpec, dcBlockR, inR[i])));
 
         const float wa = sinf(w * dA);
         const float wb = sinf(w * dB);
@@ -82,7 +82,6 @@ void PitchShift::process(const float *inL, const float *inR, float *outL, float 
             dB += delayR.size();
         else if (dB > delayR.size())
             dB -= delayR.size();
-
 
         outL[i] = l * wet + inL[i] * dry;
         outR[i] = r * wet + inR[i] * dry;

@@ -82,7 +82,17 @@ bool FmVoice::shouldRecycle()
 
 FmInstrument::FmInstrument()
     : Parent(NUM_PARAMS)
+    , m_delay()
     , m_reverb()
 {
+    effects().append(&m_delay);
     effects().append(&m_reverb);
+
+    m_delay.parameters()[fx::Delay::FEEDBACK].setValue(0.6f, true);
+    m_delay.parameters()[fx::Delay::DELAY].setValue(0.2f, true);
+    m_delay.parameters()[fx::Delay::WET].setValue(0.75f, true);
+
+    m_reverb.parameters()[fx::Reverb::ROOM_SIZE].setValue(0.9f, true);
+    m_reverb.parameters()[fx::Reverb::PITCH].setValue(2.0f, true);
+    m_reverb.parameters()[fx::Reverb::FEEDBACK].setValue(0.01f, true);
 }

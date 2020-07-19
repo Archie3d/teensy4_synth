@@ -25,13 +25,13 @@ public:
     };
 
     // Default parameters set on reverb creation
-    constexpr static float DefaultDry      = 0.8f;
-    constexpr static float DefaultWet      = 0.4f;
-    constexpr static float DefaultRoomSize = 0.98f;
+    constexpr static float DefaultDry      = 1.0f;
+    constexpr static float DefaultWet      = 0.5f;
+    constexpr static float DefaultRoomSize = 0.7f;
     constexpr static float DefaultDamp     = 0.2f;
     constexpr static float DefaultWidth    = 1.0f;
-    constexpr static float DefaultPitch    = 2.0f;
-    constexpr static float DefaultFeedback = 0.02f;
+    constexpr static float DefaultPitch    = 1.0f;
+    constexpr static float DefaultFeedback = 0.0f;
 
     static const char* Type;
 
