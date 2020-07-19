@@ -1,0 +1,8 @@
+.vscode/
+*.a
+*.o
+*.d
+*.hex
+*.elf
+*.exe
+tools/
