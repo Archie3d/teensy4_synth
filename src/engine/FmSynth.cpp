@@ -13,6 +13,26 @@ static bool _dphase_initd = []() -> bool {
     return true;
 }();
 
+constexpr size_t SINE_SIZE = 4096;
+static float SINE[SINE_SIZE + 1];
+
+static bool _sine_initd = []() -> bool {
+    for (size_t i = 0; i < SINE_SIZE; ++i)
+        SINE[i] = sinf(float(i) * math::Constants<float>::twoPi / 4096.0);
+
+    // For linear interpolation
+    SINE[SINE_SIZE] = SINE[0];
+
+    return true;
+}();
+
+static float sineLUT(float p)
+{
+    const float pp = p * SINE_SIZE;
+    const int k = (int)pp;
+    const float frac = pp - (float)k;
+    return math::lerp(SINE[k], SINE[k+1], frac);
+}
 
 float FmVoice::fmProcess(FmOp* op)
 {
@@ -20,11 +40,17 @@ float FmVoice::fmProcess(FmOp* op)
 
     if (op->modulator != nullptr)
         op->phase += fmProcess(op->modulator);
+    
 
+    // ~fmodf
     while (op->phase > 1.0f)
         op->phase -= 1.0f;
 
-    return op->amplitude * sinf(op->phase * math::Constants<float>::twoPi);
+    // ! Due to precision phase may turn out negative
+    if (op->phase < 0.0f)
+        op->phase = 0.0f;
+
+    return op->amplitude * sineLUT(op->phase);
 }
 
 //==============================================================================
@@ -40,7 +66,7 @@ void FmVoice::trigger (int note, int velocity)
 
     Envelope::Trigger env;
     env.attack = 0.01f;
-    env.decay = 2.5f;
+    env.decay = 10.0f;
     env.sustain = 0.0f;
     env.release = 0.1f;
     m_adsr.trigger (env, globals::SAMPLE_RATE);
@@ -85,14 +111,14 @@ FmInstrument::FmInstrument()
     , m_delay()
     , m_reverb()
 {
-    effects().append(&m_delay);
+    //effects().append(&m_delay);
     effects().append(&m_reverb);
 
-    m_delay.parameters()[fx::Delay::FEEDBACK].setValue(0.6f, true);
+    m_delay.parameters()[fx::Delay::FEEDBACK].setValue(0.5f, true);
     m_delay.parameters()[fx::Delay::DELAY].setValue(0.2f, true);
-    m_delay.parameters()[fx::Delay::WET].setValue(0.75f, true);
+    m_delay.parameters()[fx::Delay::WET].setValue(0.5f, true);
 
-    m_reverb.parameters()[fx::Reverb::ROOM_SIZE].setValue(0.9f, true);
+    m_reverb.parameters()[fx::Reverb::ROOM_SIZE].setValue(0.8f, true);
     m_reverb.parameters()[fx::Reverb::PITCH].setValue(2.0f, true);
     m_reverb.parameters()[fx::Reverb::FEEDBACK].setValue(0.01f, true);
 }

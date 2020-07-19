@@ -37,7 +37,6 @@ void Reverb::init()
     ::memset(m_mixBufL.data(), 0, sizeof(float) * m_mixBufL.size());
     ::memset(m_mixBufR.data(), 0, sizeof(float) * m_mixBufR.size());
 
-    //pitchShift->init();
     pitchShift.parameters()[PitchShift::DRY].setValue (0.0f, true);
     pitchShift.parameters()[PitchShift::WET].setValue (1.0f, true);
     pitchShift.parameters()[PitchShift::PITCH].setValue (params[PITCH].value(), true);

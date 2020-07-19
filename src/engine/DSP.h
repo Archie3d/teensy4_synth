@@ -6,15 +6,18 @@
 
 namespace dsp {
 
+/**
+ * @brief Delay line with linear-interpolated reads.
+ */
 class DelayLine
 {
 public:
 
-    DelayLine (size_t size = 1024);
-    void resize (size_t size);
+    DelayLine(size_t size = 1024);
+    void resize(size_t size);
     void reset();
-    void write (float x);
-    float read (float delay) const;
+    void write(float x);
+    float read(float delay) const;
 
     size_t size() const { return m_buffer.size(); }
 
@@ -41,10 +44,10 @@ struct DCBlocker
         float y1;
     };
 
-    static void updateSpec (Spec& spec);
-    static void resetState (const Spec& spec, State& state);
-    static float tick (const Spec& spec, State& state, float in);
-    static void process (const Spec& spec, State& state, const float* in, float* out, size_t size);
+    static void updateSpec(Spec& spec);
+    static void resetState(const Spec& spec, State& state);
+    static float tick(const Spec& spec, State& state, float in);
+    static void process(const Spec& spec, State& state, const float* in, float* out, size_t size);
 };
 
 //==============================================================================
@@ -84,10 +87,10 @@ struct BiquadFilter
         float y[2];
     };
 
-    static void updateSpec (Spec& spec);
-    static void resetState (const Spec& spec, State& state);
-    static float tick (const Spec& spec, State& state, float in);
-    static void process (const Spec& spec, State& state, const float* in, float* out, size_t size);
+    static void updateSpec(Spec& spec);
+    static void resetState(const Spec& spec, State& state);
+    static float tick(const Spec& spec, State& state, float in);
+    static void process(const Spec& spec, State& state, const float* in, float* out, size_t size);
 };
 
 //==============================================================================
@@ -111,19 +114,19 @@ struct AllPassFilter
         int index;
     };
 
-    static void resetState (const Spec&, State& state)
+    static void resetState(const Spec&, State& state)
     {
         state.index = 0;
-        ::memset (state.buffer.data(), 0, sizeof (float) * state.buffer.size());
+        ::memset(state.buffer.data(), 0, sizeof (float) * state.buffer.size());
     }
 
-    static void process (const Spec& spec, State& state, const float* in, float* out, size_t size)
+    static void process(const Spec& spec, State& state, const float* in, float* out, size_t size)
     {
         for (size_t i = 0; i < size; ++i)
-            out[i] = tick (spec, state, in[i]);
+            out[i] = tick(spec, state, in[i]);
     }
 
-    inline static float tick (const Spec& spec, State& state, float x)
+    inline static float tick(const Spec& spec, State& state, float x)
     {
         float output;
         float bufOut;
@@ -163,20 +166,20 @@ struct CombFilter
         int index;
     };
 
-    static void resetState (const Spec&, State& state)
+    static void resetState(const Spec&, State& state)
     {
         state.filterStore = 0.0f;
         state.index = 0;
-        ::memset (state.buffer.data(), 0, sizeof (float) * state.buffer.size());
+        ::memset(state.buffer.data(), 0, sizeof (float) * state.buffer.size());
     }
 
-    static void process (const Spec& spec, State& state, const float* in, float* out, size_t size)
+    static void process(const Spec& spec, State& state, const float* in, float* out, size_t size)
     {
         for (size_t i = 0; i < size; ++i)
-            out[i] = tick (spec, state, in[i]);
+            out[i] = tick(spec, state, in[i]);
     }
 
-    inline static float tick (const Spec& spec, State& state, float x)
+    inline static float tick(const Spec& spec, State& state, float x)
     {
         float output = state.buffer[state.index];
 

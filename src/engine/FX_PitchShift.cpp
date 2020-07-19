@@ -13,11 +13,11 @@ PitchShift::PitchShift()
     , dB(0.0f)
     , w(0.0f)
 {
-    params[DRY].setValue (0.0f, true);
-    params[WET].setValue (1.0f, true);
+    params[DRY].setValue(0.0f, true);
+    params[WET].setValue(1.0f, true);
 
-    params[PITCH].setRange (0.0f, 4.0f);
-    params[PITCH].setValue (1.0f, true);
+    params[PITCH].setRange(0.0f, 4.0f);
+    params[PITCH].setValue(1.0f, true);
 
     init();
 }
@@ -45,7 +45,7 @@ void PitchShift::init()
     dA = 0.0f;
     dB = 0.5f * delayL.size();
 
-    w = math::Constants<float>::pi / (float) delayL.size();
+    w = 2.0f / (float)delayL.size();
 }
 
 void PitchShift::process(const float *inL, const float *inR, float *outL, float *outR, size_t numFrames)
@@ -64,8 +64,11 @@ void PitchShift::process(const float *inL, const float *inR, float *outL, float 
         delayR.write(dsp::BiquadFilter::tick(filterSpec, filterR,
                                              dsp::DCBlocker::tick(dcBlockSpec, dcBlockR, inR[i])));
 
-        const float wa = sinf(w * dA);
-        const float wb = sinf(w * dB);
+        // Approximating sine wave with a square function
+        const float wdA = w * dA - 1.0f;
+        const float wdB = w * dB - 1.0f;
+        const float wa = 1.0f - wdA * wdA;
+        const float wb = 1.0f - wdB * wdB;
 
         const float l = 0.5f * (delayL.read(dA) * wa + delayL.read(dB) * wb);
         const float r = 0.5f * (delayR.read(dA) * wa + delayR.read(dB) * wb);
