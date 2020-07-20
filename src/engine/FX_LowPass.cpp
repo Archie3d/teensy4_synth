@@ -26,10 +26,10 @@ LowPass::LowPass()
 void LowPass::init()
 {
     filterSpec.sampleRate = globals::SAMPLE_RATE;
-    updateFilter (filterSpec, params[FREQUENCY].value(), params[Q_FACTOR].value());
+    updateFilter(filterSpec, params[FREQUENCY].value(), params[Q_FACTOR].value());
 
-    dsp::BiquadFilter::resetState (filterSpec, filterL);
-    dsp::BiquadFilter::resetState (filterSpec, filterR);
+    dsp::BiquadFilter::resetState(filterSpec, filterL);
+    dsp::BiquadFilter::resetState(filterSpec, filterR);
 }
 
 void LowPass::process (const float *inL, const float *inR, float *outL, float *outR, size_t numFrames)
@@ -43,14 +43,14 @@ void LowPass::process (const float *inL, const float *inR, float *outL, float *o
         q = params[Q_FACTOR].nextValue();
         updateFilter (filterSpec, f, q);
 
-        *(outL++) = dsp::BiquadFilter::tick (filterSpec, filterL, *(inL++));
-        *(outR++) = dsp::BiquadFilter::tick (filterSpec, filterR, *(inR++));
+        *(outL++) = dsp::BiquadFilter::tick(filterSpec, filterL, *(inL++));
+        *(outR++) = dsp::BiquadFilter::tick(filterSpec, filterR, *(inR++));
 
         --numFrames;
     }
 
-    dsp::BiquadFilter::process (filterSpec, filterL, inL, outL, numFrames);
-    dsp::BiquadFilter::process (filterSpec, filterR, inR, outR, numFrames);
+    dsp::BiquadFilter::process(filterSpec, filterL, inL, outL, numFrames);
+    dsp::BiquadFilter::process(filterSpec, filterR, inR, outR, numFrames);
 }
 
 } // namespace fx

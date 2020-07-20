@@ -6,8 +6,12 @@
 #include "engine/Envelope.h"
 #include "engine/Instrument.h"
 
+#include "engine/FX_LowPass.h"
+#include "engine/FX_Distortion.h"
 #include "engine/FX_Delay.h"
 #include "engine/FX_Reverb.h"
+
+float sineLUT(float p);
 
 class FmVoice : public Voice,
                 public ListItem<FmVoice>
@@ -15,11 +19,28 @@ class FmVoice : public Voice,
 public:
     struct FmOp
     {
-        float phase = 0;
-        float phaseInc = 0;
-        float amplitude = 1.0f; // TODO: use adsr here?
+        float phase = 0.0f;
+        float phaseInc = 0.0f;
 
-        FmOp* modulator = nullptr;
+        Envelope aeg;
+
+        float value = 0.0f;
+
+        inline float tick(float pmod = 0.0f)
+        {
+            phase += phaseInc + pmod;
+   
+            // ~fmodf
+            while (phase > 1.0f)
+                phase -= 1.0f;
+
+            // ! Due to precision phase may turn out negative
+            if (phase < 0.0f)
+                phase = 0.0f;
+
+            value = aeg.next() * sineLUT(phase);
+            return value;
+        }
     };
 
     static float fmProcess(FmOp* op);
@@ -33,8 +54,13 @@ public:
     bool shouldRecycle() override;
 
 private:
+
+    void tick(float& l, float& r);
+
     Envelope m_adsr;
-    FmOp m_operator[2];
+
+    constexpr static size_t NUM_OPS = 6;
+    FmOp m_operator[NUM_OPS];
 };
 
 //==============================================================================
@@ -59,6 +85,8 @@ private:
 
     using Parent = Instrument<FmVoice, 32>;
 
+    fx::LowPass m_lowPass;
+    fx::Distortion m_distortion;
     fx::Delay m_delay;
     fx::Reverb m_reverb;
 };
