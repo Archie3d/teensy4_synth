@@ -292,6 +292,8 @@ void AudioConnection::disconnect(void)
 // their constructors.
 bool AudioStream::update_scheduled = false;
 
+bool AudioStream::update_pending = false;
+
 bool AudioStream::update_setup(void)
 {
 	if (update_scheduled) return false;
@@ -332,6 +334,8 @@ void software_isr(void) // AudioStream::update_all()
 	AudioStream::cpu_cycles_total = totalcycles;
 	if (totalcycles > AudioStream::cpu_cycles_total_max)
 		AudioStream::cpu_cycles_total_max = totalcycles;
+
+	AudioStream::update_pending = false;
 
 	asm("DSB");
 }

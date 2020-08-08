@@ -149,6 +149,9 @@ public:
 	static uint16_t cpu_cycles_total_max;
 	static uint16_t memory_used;
 	static uint16_t memory_used_max;
+
+	static bool update_pending;
+
 protected:
 	bool active;
 	unsigned char num_inputs;
@@ -159,7 +162,15 @@ protected:
 	audio_block_t * receiveWritable(unsigned int index = 0);
 	static bool update_setup(void);
 	static void update_stop(void);
-	static void update_all(void) { NVIC_SET_PENDING(IRQ_SOFTWARE); }
+	static void update_all(void)
+	{
+		if (! update_pending) {
+			update_pending = true;
+			NVIC_SET_PENDING(IRQ_SOFTWARE);
+		} else {
+			Serial.printf("Update pending!\r\n");
+		}
+	}
 	friend void software_isr(void);
 	friend class AudioConnection;
 	uint8_t numConnections;
@@ -167,6 +178,7 @@ private:
 	AudioConnection *destination_list;
 	audio_block_t **inputQueue;
 	static bool update_scheduled;
+
 	virtual void update(void) = 0;
 	static AudioStream *first_update; // for update_all
 	AudioStream *next_update; // for update_all
