@@ -30,16 +30,17 @@ void FmVoice::trigger (int note, int velocity)
     m_modPhase = 0.0f;
 
     const float v = float(velocity) * (1.0f / 127.0f);
-    const float attack = 0.5f / (1.0f + 50.0f * v);
+    const float attack = 1.0f / (1.0f + 200.0f * v);
+    const float decay = 10.0f * v;
 
     m_operator[0].phaseInc = DPHASE[note];
-    m_operator[0].aeg.trigger({attack, 10.0f, 0.0f, 1.0f}, globals::SAMPLE_RATE);
+    m_operator[0].aeg.trigger({attack, decay, 0.0f, 1.0f}, globals::SAMPLE_RATE);
 
     m_operator[1].phaseInc = 14.0f * DPHASE[note];
     m_operator[1].aeg.trigger({0.0f, 6.0f, 0.2f, 0.5f}, globals::SAMPLE_RATE);
 
     m_operator[2].phaseInc = DPHASE[note];
-    m_operator[2].aeg.trigger({attack, 10.0f, 0.0f, 1.0f}, globals::SAMPLE_RATE);
+    m_operator[2].aeg.trigger({attack, decay, 0.0f, 1.0f}, globals::SAMPLE_RATE);
 
     m_operator[3].phaseInc = 1.0f * DPHASE[note];
     m_operator[3].aeg.trigger({0.0f, 4.0f, 0.3f, 0.5f}, globals::SAMPLE_RATE);
@@ -70,7 +71,7 @@ void FmVoice::reset()
 
 void FmVoice::process(float* outL, float* outR, size_t numFrames)
 {
-    const float gain = VELOCITY_CURVE[velocity()];
+    const float gain = 0.2f + 0.8f * VELOCITY_CURVE[velocity()];
 
     for (size_t i = 0; i < numFrames; ++i) {
         tick(outL[i], outR[i]);
