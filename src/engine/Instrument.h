@@ -32,7 +32,11 @@ public:
     {
         auto* voice = m_activeVoices.first();
 
-        if (voice != nullptr) {
+        if (voice == nullptr) {
+            // No active voices
+            ::memset(outL, 0, sizeof(float) * numFrames);
+            ::memset(outR, 0, sizeof(float) * numFrames);
+        }  else {
             voice->process(outL, outR, numFrames);
 
             if (voice->shouldRecycle()) {
@@ -43,25 +47,26 @@ public:
             } else {
                 voice = voice->next();
             }
-        }
 
-        while (voice != nullptr) {
-            voice->process(m_mixBufL.data(), m_mixBufR.data(), numFrames);
+            while (voice != nullptr) {
+                voice->process(m_mixBufL.data(), m_mixBufR.data(), numFrames);
 
-            // Mix
-            for (size_t i = 0; i < numFrames; ++i) {
-                outL[i] += m_mixBufL[i];
-                outR[i] += m_mixBufR[i];
+                // Mix
+                for (size_t i = 0; i < numFrames; ++i) {
+                    outL[i] += m_mixBufL[i];
+                    outR[i] += m_mixBufR[i];
+                }
+
+                if (voice->shouldRecycle()) {
+                    auto* nextVoice = m_activeVoices.removeAndReturnNext(voice);
+                    m_numActiveVoices -=1;
+                    m_voicePool.recycle(voice);
+                    voice = nextVoice;
+                } else {
+                    voice = voice->next();
+                }
             }
 
-            if (voice->shouldRecycle()) {
-                auto* nextVoice = m_activeVoices.removeAndReturnNext(voice);
-                m_numActiveVoices -=1;
-                m_voicePool.recycle(voice);
-                voice = nextVoice;
-            } else {
-                voice = voice->next();
-            }
         }
 
         m_effects.process(outL, outR, outL, outR, numFrames);

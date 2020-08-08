@@ -35,6 +35,7 @@ public:
     }
 
     int key() const noexcept { return m_key; }
+    int velocity() const noexcept { return m_velocity; }
 
     virtual void release() = 0;
     virtual void reset() = 0;

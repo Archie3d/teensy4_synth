@@ -44,5 +44,23 @@ def gen_sine():
 
     return res
 
+def gen_velocity():
+    """
+    Generate velocity curve
+    """
+
+    res = "constexpr size_t VELOCITY_CURVE_SIZE = 128;\n"
+    res += "const static float VELOCITY_CURVE[VELOCITY_CURVE_SIZE] = {\n"
+
+    for i in range(128):
+        v = float(i) / 127.0
+        v = math.pow(v, 1.5);
+        res += "    {:.12f}".format(v) + "f,\n"
+    
+    res += "};\n"
+
+    return res;
+
 #print(gen_midi_note_to_phase_inc());
 #print(gen_sine());
+print(gen_velocity());

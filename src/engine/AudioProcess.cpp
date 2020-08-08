@@ -46,8 +46,8 @@ void AudioProcess::update()
         maxL = std::max(maxL, fabsf(l));
         maxR = std::max(maxR, fabsf(r));
 
-        m_audioData[0]->data[i] = (int16_t) (l * 32767);
-        m_audioData[1]->data[i] = (int16_t) (r * 32767);
+        m_audioData[0]->data[i] = (int16_t) (l * 32767.0f);
+        m_audioData[1]->data[i] = (int16_t) (r * 32767.0f);
     }
 
     m_amplitudeL = maxL;
