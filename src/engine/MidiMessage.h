@@ -16,6 +16,7 @@ public:
     };
 
     enum Controller {
+        CC_Modulation   = 1,
         CC_SustainPedal = 64
     };
 

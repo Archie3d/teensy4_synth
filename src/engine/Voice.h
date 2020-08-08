@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 #include "engine/FastList.h"
+#include "engine/Parameter.h"
 
 /**
  * @brief Abstract voice.
@@ -13,8 +14,19 @@
 class Voice
 {
 public:
-    Voice() {}
+    Voice()
+        : params(nullptr)
+        , m_key(0)
+        , m_velocity(0)
+    {
+    }
+
     virtual ~Voice() = default;
+
+    void setParametersPool(ParameterPool* p)
+    {
+        params = p;
+    }
 
     virtual void trigger(int key, int velocity)
     {
@@ -28,6 +40,11 @@ public:
     virtual void reset() = 0;
     virtual void process(float* outL, float* outR, size_t numFrames) = 0;
     virtual bool shouldRecycle() = 0;
+
+protected:
+
+    // Shared parameters
+    ParameterPool* params;
 
 private:
     int m_key;
@@ -48,6 +65,13 @@ public:
     {
         for (auto& voice : m_voices)
             m_idleVoices.append(&voice);
+    }
+
+    void setParametersPool(ParameterPool* p)
+    {
+        // Shared parameters accessible from all the voices
+        for (auto& v : m_voices)
+            v.setParametersPool(p);
     }
 
     VoiceType* trigger(int note, int velocity)

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "output_i2s.h"
+#include "MIDI.h"
 #include "usb_midi.h"
 #include "engine/Engine.h"
 #include "engine/MidiMessage.h"
@@ -22,6 +23,8 @@ AudioConnection wireR(audioProcess, 1, i2s, 1);
 
 // =========================================================
 
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
+
 namespace midi
 {
     static void noteOn(byte channel, byte note, byte velocity)
@@ -38,6 +41,27 @@ namespace midi
     {
         audioProcess.controlChange(channel, control, value);
     }
+
+    static void processHardwareMIDI()
+    {
+        if (MIDI.read()) {
+            const auto type = MIDI.getType();
+
+            switch (type) {
+                case midi::NoteOn:
+                    audioProcess.noteOn(MIDI.getChannel(), MIDI.getData1(), MIDI.getData2());
+                    break;
+                case midi::NoteOff:
+                    audioProcess.noteOff(MIDI.getChannel(), MIDI.getData1(), MIDI.getData2());
+                    break;
+                case midi::ControlChange:
+                    audioProcess.controlChange(MIDI.getChannel(), MIDI.getData1(), MIDI.getData2());
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 }
 
 // =========================================================
@@ -49,9 +73,13 @@ extern "C" int main(void) {
     {
         Engine::AudioLock lock;
 
+        // Initialize USB (slave) midi
         usbMIDI.setHandleNoteOn        (midi::noteOn);
         usbMIDI.setHandleNoteOff       (midi::noteOff);
         usbMIDI.setHandleControlChange (midi::controlChange);
+
+        // Initialize hardware MIDI
+        MIDI.begin(MIDI_CHANNEL_OMNI);
     }
 
     pinMode(13, OUTPUT);
@@ -61,6 +89,7 @@ extern "C" int main(void) {
 
 	while (1) {
         usbMIDI.read();
+        midi::processHardwareMIDI();
 
         const auto t = millis() - ts;
 

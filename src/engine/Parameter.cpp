@@ -62,13 +62,10 @@ Parameter& Parameter::operator = (float v)
 
 float Parameter::nextValue()
 {
-    updateSmoothing();
-
     if (m_smoothing)
-    {
         m_currentValue = m_targetValue * m_frac + m_currentValue * (1.0f - m_frac);
-        updateSmoothing();
-    }
+
+    updateSmoothing();
 
     return m_currentValue;
 }

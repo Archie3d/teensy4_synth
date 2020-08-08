@@ -3,6 +3,7 @@
 #include <array>
 #include <bitset>
 #include <atomic>
+#include <map>
 #include "engine/Globals.h"
 #include "engine/Parameter.h"
 #include "engine/MidiMessage.h"
@@ -19,6 +20,8 @@ public:
     {
         m_sustained = false;
         m_numActiveVoices = 0;
+
+        m_voicePool.setParametersPool(&m_parameters);
     }
 
     virtual ~Instrument() = default;
@@ -61,8 +64,9 @@ public:
             }
         }
 
-        // TODO: pass via mix buffer?
         m_effects.process(outL, outR, outL, outR, numFrames);
+
+        updateParameters();
     }
 
     void processMidiMessage(const MidiMessage& msg)
@@ -88,7 +92,21 @@ public:
 
     ParameterPool& parameters() { return m_parameters; }
 
+    void mapCC(int cc, int param)
+    {
+        m_ccToParamMap[cc] = param;
+    }
+
     EffectChain& effects() { return m_effects; }
+
+protected:
+
+    virtual void updateParameters()
+    {
+        // Advance all parameters
+        for (size_t i = 0; i < m_parameters.size(); ++i)
+            m_parameters[i].nextValue();
+    }
 
 private:
 
@@ -120,7 +138,7 @@ private:
     }
 
     void controlChange(int control, int value)
-    {
+    {        
         if (control == MidiMessage::CC_SustainPedal) {
             bool wasSustained = m_sustained;
             m_sustained = (value >= 64);
@@ -128,6 +146,16 @@ private:
             if (wasSustained && (! m_sustained)) {
                 releaseSustained();
             }
+        }
+
+        const auto it = m_ccToParamMap.find(control);
+
+        if (it != m_ccToParamMap.end()) {
+            // Set parameter tagret value. The actualt value will
+            // be updated when updateParameters() gets called.
+            const float v = float(value) * (1.0f / 127.0f);
+            m_parameters[it->second].setValue(v);
+
         }
     }
 
@@ -142,6 +170,7 @@ private:
             voice = voice->next();
         }
     }
+
 
     ParameterPool m_parameters;
 
@@ -158,4 +187,5 @@ private:
     std::array<float, globals::AUDIO_BLOCK_SIZE> m_mixBufL;
     std::array<float, globals::AUDIO_BLOCK_SIZE> m_mixBufR;
 
+    std::map<int, int> m_ccToParamMap;
 };

@@ -58,6 +58,7 @@ private:
     void tick(float& l, float& r);
 
     Envelope m_adsr;
+    float m_modPhase;
 
     constexpr static size_t NUM_OPS = 6;
     FmOp m_operator[NUM_OPS];
@@ -65,7 +66,9 @@ private:
 
 //==============================================================================
 
-class FmInstrument : public Instrument<FmVoice, 32>
+using PolyphonicInstrument = Instrument<FmVoice, 16>;
+
+class FmInstrument : public PolyphonicInstrument
 {
 public:
 
@@ -76,6 +79,9 @@ public:
         ADSR_RELEASE,
         ADSR_SUSTAIN,
 
+        MODULATION, // Mod wheel, cc1
+        TONE,
+
         NUM_PARAMS
     };
 
@@ -83,10 +89,5 @@ public:
 
 private:
 
-    using Parent = Instrument<FmVoice, 32>;
-
-    fx::LowPass m_lowPass;
-    fx::Distortion m_distortion;
-    fx::Delay m_delay;
     fx::Reverb m_reverb;
 };

@@ -63,8 +63,7 @@ float Envelope::next()
     case Attack:
         currentLevel = attackBase + currentLevel * attackCoef;
 
-        if (currentLevel >= 1.0f)
-        {
+        if (currentLevel >= 1.0f) {
             currentLevel = 1.0f;
             currentState = Decay;
         }
@@ -72,8 +71,7 @@ float Envelope::next()
     case Decay:
         currentLevel = decayBase + currentLevel * decayCoef;
 
-        if (currentLevel <= sustainLevel)
-        {
+        if (currentLevel <= sustainLevel) {
             currentLevel = sustainLevel;
 
             if (currentLevel > 0.0f)
@@ -87,8 +85,7 @@ float Envelope::next()
     case Release:
         currentLevel = releaseBase + currentLevel * releaseCoef;
 
-        if (currentLevel <= 0.0f)
-        {
+        if (currentLevel <= 0.0f) {
             currentLevel = 0.0f;
             currentState = Off;
         }
