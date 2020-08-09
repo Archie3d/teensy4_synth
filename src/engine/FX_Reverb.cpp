@@ -28,18 +28,18 @@ Reverb::Reverb()
 
 void Reverb::init()
 {
-    ReverbL::updateSpec (reverbLSpec);
-    ReverbR::updateSpec (reverbRSpec);
+    ReverbL::updateSpec(reverbLSpec);
+    ReverbR::updateSpec(reverbRSpec);
 
-    ReverbL::resetState (reverbLSpec, reverbLState);
-    ReverbR::resetState (reverbRSpec, reverbRState);
+    ReverbL::resetState(reverbLSpec, reverbLState);
+    ReverbR::resetState(reverbRSpec, reverbRState);
 
     ::memset(m_mixBufL.data(), 0, sizeof(float) * m_mixBufL.size());
     ::memset(m_mixBufR.data(), 0, sizeof(float) * m_mixBufR.size());
 
-    pitchShift.parameters()[PitchShift::DRY].setValue (0.0f, true);
-    pitchShift.parameters()[PitchShift::WET].setValue (1.0f, true);
-    pitchShift.parameters()[PitchShift::PITCH].setValue (params[PITCH].value(), true);
+    //pitchShift.parameters()[PitchShift::DRY].setValue (0.0f, true);
+    //pitchShift.parameters()[PitchShift::WET].setValue (1.0f, true);
+    //pitchShift.parameters()[PitchShift::PITCH].setValue (params[PITCH].value(), true);
 }
 
 void Reverb::process (const float *inL, const float *inR, float *outL, float *outR, size_t numFrames)
@@ -50,12 +50,12 @@ void Reverb::process (const float *inL, const float *inR, float *outL, float *ou
     float* tmpR = m_mixBufR.data();
 
     const auto pitch = params[PITCH].value();
-    auto feedback = params[FEEDBACK].value();
+    const auto feedback = params[FEEDBACK].value();
 
     if (feedback > 0.0f && pitch != 1.0f) {
         // Shimmer reverb
         pitchShift.parameters()[PitchShift::PITCH].setValue (pitch, true);
-        pitchShift.process (tmpL, tmpR, tmpL, tmpR, numFrames);
+        pitchShift.process(tmpL, tmpR, tmpL, tmpR, numFrames);
         
         for (size_t i = 0; i < numFrames; ++i) {
             tmpL[i] = inL[i] + feedback * tmpL[i];
@@ -71,15 +71,12 @@ void Reverb::process (const float *inL, const float *inR, float *outL, float *ou
         ReverbR::process(reverbRSpec, reverbRState, inR, tmpR, numFrames);
     }
     
+    const float width = params[WIDTH].value();
+    const float dry = params[DRY].value();
+    const float wet = params[WET].value();
+
     // Dry/wet mixing
     for (size_t i = 0; i < numFrames; ++i) {
-        // Advance smoothed parameters
-        params[PITCH].nextValue();
-        params[FEEDBACK].nextValue();
-
-        const auto width = 1.0f; //params[WIDTH].nextValue();
-        const auto dry = params[DRY].nextValue();
-        const auto wet = params[WET].nextValue();
         const auto wet1 = wet * (width * 0.5f + 0.5f);
         const auto wet2 = wet * (0.5f * (1.0f - width));
 
