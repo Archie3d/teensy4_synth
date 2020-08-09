@@ -1,5 +1,7 @@
 #pragma once
 
+#include "engine/Globals.h"
+
 class Envelope
 {
 public:
@@ -29,9 +31,9 @@ public:
 
     State state() const noexcept { return currentState; }
 
-    void trigger (const Trigger& trigger, float sampleRate);
+    void trigger (const Trigger& trigger);
     void release();
-    void release (float t, float sampleRate);
+    void release (float t);
 
     float next();
 
@@ -39,7 +41,11 @@ public:
 
 private:
 
-    static float calculate (float rate, float targetRatio);
+    const static float logAttackTR;
+    const static float logDecayReleaseTR;
+
+    static float calculate(float rate, float targetRatio);
+    static float calculate2(float rate, float logtr);
 
     State currentState;
     float currentLevel;

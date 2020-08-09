@@ -4,6 +4,9 @@
 // Ported from
 // https://www.earlevel.com/main/2013/06/03/envelope-generators-adsr-code/
 
+const float Envelope::logAttackTR = -logf((1.0f + Envelope::AttackTargetRatio) / Envelope::AttackTargetRatio);
+const float Envelope::logDecayReleaseTR = -logf((1.0f + Envelope::DecayReleaseTargetRatio) / Envelope::DecayReleaseTargetRatio);
+
 Envelope::Envelope()
     : currentState (Off)
     , currentLevel (0.0f)
@@ -20,20 +23,21 @@ Envelope::Envelope()
 {
 }
 
-void Envelope::trigger (const Envelope::Trigger& trigger, float sampleRate)
+void Envelope::trigger (const Envelope::Trigger& trigger)
 {
     sustainLevel = trigger.sustain;
 
-    attackRate = trigger.attack * sampleRate;
-    attackCoef = calculate (attackRate, AttackTargetRatio);
+    attackRate = trigger.attack * globals::SAMPLE_RATE;
+    
+    attackCoef = calculate2 (attackRate, logAttackTR);
     attackBase = (1.0f + AttackTargetRatio) * (1.0f - attackCoef);
 
-    decayRate = trigger.decay * sampleRate;
-    decayCoef = calculate (decayRate, DecayReleaseTargetRatio);
+    decayRate = trigger.decay * globals::SAMPLE_RATE;
+    decayCoef = calculate2 (decayRate, logDecayReleaseTR);
     decayBase = (sustainLevel - DecayReleaseTargetRatio) * (1.0f - decayCoef);
 
-    releaseRate = trigger.release * sampleRate;
-    releaseCoef = calculate (releaseRate, DecayReleaseTargetRatio);
+    releaseRate = trigger.release * globals::SAMPLE_RATE;
+    releaseCoef = calculate2 (releaseRate, logDecayReleaseTR);
     releaseBase = -DecayReleaseTargetRatio * (1.0f - releaseCoef);
 
     currentState = Attack;
@@ -45,10 +49,10 @@ void Envelope::release()
     currentState = Release;
 }
 
-void Envelope::release (float t, float sampleRate)
+void Envelope::release (float t)
 {
-    releaseRate = t * sampleRate;
-    releaseCoef = calculate (releaseRate, DecayReleaseTargetRatio);
+    releaseRate = t * globals::SAMPLE_RATE;
+    releaseCoef = calculate2 (releaseRate, logDecayReleaseTR);
     releaseBase = -DecayReleaseTargetRatio * (1.0f - releaseCoef);
 
     currentState = Release;
@@ -97,7 +101,12 @@ float Envelope::next()
     return currentLevel;
 }
 
-float Envelope::calculate (float rate, float targetRatio)
+float Envelope::calculate(float rate, float targetRatio)
 {
-    return rate <= 0 ? 0.0f : expf (-logf ((1.0f + targetRatio) / targetRatio) / rate);
+    return rate <= 0 ? 0.0f : expf(-logf((1.0f + targetRatio) / targetRatio) / rate);
+}
+
+float Envelope::calculate2(float rate, float logtr)
+{
+    return rate <= 0 ? 0.0f : expf(logtr / rate);
 }

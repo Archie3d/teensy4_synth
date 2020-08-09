@@ -36,22 +36,22 @@ void FmVoice::trigger (int note, int velocity)
     const float dp = DPHASE[note] * 0.5f;
 
     m_operator[0].phaseInc = dp;
-    m_operator[0].aeg.trigger({attack, decay, 0.0f, 1.0f}, globals::SAMPLE_RATE);
+    m_operator[0].aeg.trigger({attack, decay, 0.0f, 1.0f});
 
     m_operator[1].phaseInc = 14.0f * dp;
-    m_operator[1].aeg.trigger({0.0f, 6.0f, 0.2f, 0.5f}, globals::SAMPLE_RATE);
+    m_operator[1].aeg.trigger({0.0f, 6.0f, 0.2f, 0.5f});
 
     m_operator[2].phaseInc = dp;
-    m_operator[2].aeg.trigger({attack, decay, 0.0f, 1.0f}, globals::SAMPLE_RATE);
+    m_operator[2].aeg.trigger({attack, decay, 0.0f, 1.0f});
 
     m_operator[3].phaseInc = 1.0f * dp;
-    m_operator[3].aeg.trigger({0.0f, 4.0f, 0.3f, 0.5f}, globals::SAMPLE_RATE);
+    m_operator[3].aeg.trigger({0.0f, 4.0f, 0.3f, 0.5f});
 
     m_operator[4].phaseInc = dp;
-    m_operator[4].aeg.trigger({attack, 3.0f, 0.0f, 1.0f}, globals::SAMPLE_RATE);
+    m_operator[4].aeg.trigger({attack, 3.0f, 0.0f, 1.0f});
 
     m_operator[5].phaseInc = dp;
-    m_operator[5].aeg.trigger({0.0f, 1.0f, 0.0f, 0.0f}, globals::SAMPLE_RATE);
+    m_operator[5].aeg.trigger({0.0f, 1.0f, 0.0f, 0.0f});
 
 }
 
