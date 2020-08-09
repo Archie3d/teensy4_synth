@@ -33,7 +33,7 @@ void FmVoice::trigger (int note, int velocity)
     const float attack = 0.1f / (1.0f + 500.0f * v);
     const float decay = 3.0f + 7.0f * v;
 
-    const float dp = DPHASE[note] * 0.5f;
+    const float dp = DPHASE[note];
 
     m_operator[0].phaseInc = dp;
     m_operator[0].aeg.trigger({attack, decay, 0.0f, 1.0f});
