@@ -105,7 +105,12 @@ void AudioOutputI2S::isr(void)
 	saddr = (uint32_t)(dma.TCD->SADDR);
 	dma.clearInterrupt();
 
-	bool bufferOverrun = false;
+	if (AudioStream::update_pending) {
+		// Audio data is not ready.
+		memset(dest,0,AUDIO_BLOCK_SAMPLES * 2);
+		arm_dcache_flush_delete(dest, sizeof(i2s_tx_buffer) / 2 );
+		return;		
+	}
 
 	if (saddr < (uint32_t)i2s_tx_buffer + sizeof(i2s_tx_buffer) / 2) {
 		// DMA is transmitting the first half of the buffer
@@ -116,23 +121,12 @@ void AudioOutputI2S::isr(void)
 		// DMA is transmitting the second half of the buffer
 		// so we must fill the first half
 		dest = (int16_t *)i2s_tx_buffer;
-
-		if (AudioStream::update_pending) {
-			// Audio data is not ready.
-			bufferOverrun = true;
-		}
 	}
 
 	blockL = AudioOutputI2S::block_left_1st;
 	blockR = AudioOutputI2S::block_right_1st;
 	offsetL = AudioOutputI2S::block_left_offset;
 	offsetR = AudioOutputI2S::block_right_offset;
-
-	if (bufferOverrun) {
-		memset(dest,0,AUDIO_BLOCK_SAMPLES * 2);
-		arm_dcache_flush_delete(dest, sizeof(i2s_tx_buffer) / 2 );
-		return;
-	}
 
 	if (blockL && blockR) {
 		memcpy_tointerleaveLR(dest, blockL->data + offsetL, blockR->data + offsetR);
