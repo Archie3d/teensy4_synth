@@ -108,5 +108,11 @@ float Envelope::calculate(float rate, float targetRatio)
 
 float Envelope::calculate2(float rate, float logtr)
 {
-    return rate <= 0 ? 0.0f : expf(logtr / rate);
+    if (rate <= 0.0f)
+        return 0.0f;
+    
+    const float x = logtr / rate;
+
+    // Polynomial approximation of exp(x)
+    return 1.0f + x * (1.0f + 0.5 * x);
 }
