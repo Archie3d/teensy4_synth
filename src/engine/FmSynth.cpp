@@ -76,10 +76,12 @@ void FmVoice::process(float* outL, float* outR, size_t numFrames)
     const float gain = 0.2f + 0.8f * VELOCITY_CURVE[velocity()];
 
     for (size_t i = 0; i < numFrames; ++i) {
-        tick(outL[i], outR[i]);
+        float l = 0.0f;
+        float r = 0.0f;
+        tick(l, r);
 
-        outL[i] *= gain;
-        outR[i] *= gain;
+        outL[i] += l * gain;
+        outR[i] += r * gain;
     }
 }
 

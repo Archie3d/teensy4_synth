@@ -39,8 +39,8 @@ void Engine::process(float* outL, float* outR, size_t numFrames)
 {
     processMidi();
 
-    //::memset(outL, 0, sizeof(float) * numFrames);
-    //::memset(outR, 0, sizeof(float) * numFrames);
+    ::memset(outL, 0, sizeof(float) * numFrames);
+    ::memset(outR, 0, sizeof(float) * numFrames);
 
     m_instrument.process(outL, outR, numFrames);
 }
