@@ -98,6 +98,8 @@ private:
         if (auto* voice = m_voicePool.trigger(msg.note(), msg.velocity())) {
             m_activeVoices.append(voice);
             m_numActiveVoices += 1;
+        } else if (auto* voice = stealVoice()) {
+            voice->trigger(msg.note(), msg.velocity());
         }
     }
 
@@ -116,6 +118,33 @@ private:
 
             voice = voice->next();
         }
+    }
+
+    VoiceType* stealVoice()
+    {
+        // Find the quietest voice to steal.
+        auto* voice = m_activeVoices.first();
+
+        if (voice == nullptr)
+            return nullptr;
+
+        auto lowestLevel = voice->envelopeLevel();
+        auto* lowestVoice = voice;
+
+        voice = voice->next();
+
+        while (voice != nullptr) {
+            const auto voiceLevel = voice->envelopeLevel();
+
+            if (voiceLevel < lowestLevel) {
+                lowestLevel = voiceLevel;
+                lowestVoice = voice;
+            }
+
+            voice = voice->next();
+        }
+
+        return lowestVoice;
     }
 
     void controlChange(int control, int value)

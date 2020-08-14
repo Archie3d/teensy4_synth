@@ -41,6 +41,7 @@ public:
     virtual void reset() = 0;
     virtual void process(float* outL, float* outR, size_t numFrames) = 0;
     virtual bool shouldRecycle() = 0;
+    virtual float envelopeLevel() const = 0;
 
 protected:
 
@@ -77,8 +78,7 @@ public:
 
     VoiceType* trigger(int note, int velocity)
     {
-        if (auto* voice = m_idleVoices.first())
-        {
+        if (auto* voice = m_idleVoices.first()) {
             m_idleVoices.remove(voice);
             voice->trigger(note, velocity);
             return voice;

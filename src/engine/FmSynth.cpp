@@ -122,6 +122,12 @@ bool FmVoice::shouldRecycle()
         && m_operator[4].aeg.state() == Envelope::State::Off;
 }
 
+float FmVoice::envelopeLevel() const
+{
+    // Should take the slowest envelope here.
+    return m_operator[0].aeg.level();
+}
+
 //==============================================================================
 
 FmInstrument::FmInstrument()

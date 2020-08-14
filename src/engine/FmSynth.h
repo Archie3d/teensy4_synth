@@ -52,6 +52,7 @@ public:
     void reset() override;
     void process(float* outL, float* outR, size_t numFrames) override;
     bool shouldRecycle() override;
+    float envelopeLevel() const override;
 
 private:
 
