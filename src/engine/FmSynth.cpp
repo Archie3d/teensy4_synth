@@ -49,19 +49,19 @@ void FmVoice::trigger (int note, int velocity)
     const float dp = DPHASE[note];
 
     m_operator[0].phaseInc = dp;
-    m_operator[0].aeg.trigger({attack, decay, 0.0f, 1.0f});
+    m_operator[0].aeg.trigger({attack, decay, 0.0f, 0.25f});
 
     m_operator[1].phaseInc = 14.0f * dp;
     m_operator[1].aeg.trigger();
 
     m_operator[2].phaseInc = dp;
-    m_operator[2].aeg.trigger({attack, decay, 0.0f, 1.0f});
+    m_operator[2].aeg.trigger({attack, decay, 0.0f, 0.25f});
 
     m_operator[3].phaseInc = 1.0f * dp;
     m_operator[3].aeg.trigger();
 
     m_operator[4].phaseInc = dp;
-    m_operator[4].aeg.trigger({attack, 3.0f, 0.0f, 1.0f});
+    m_operator[4].aeg.trigger({attack, 3.0f, 0.0f, 0.25f});
 
     m_operator[5].phaseInc = dp;
     m_operator[5].aeg.trigger();
@@ -137,8 +137,8 @@ FmInstrument::FmInstrument()
     mapCC(16, TONE);
 
     m_reverb.parameters()[fx::Reverb::DRY].setValue(1.0f, true);
-    m_reverb.parameters()[fx::Reverb::WET].setValue(0.4f, true);
-    m_reverb.parameters()[fx::Reverb::ROOM_SIZE].setValue(0.75f, true);
+    m_reverb.parameters()[fx::Reverb::WET].setValue(0.5f, true);
+    m_reverb.parameters()[fx::Reverb::ROOM_SIZE].setValue(0.85f, true);
     m_reverb.parameters()[fx::Reverb::WIDTH].setValue(1.0f, true);
     m_reverb.parameters()[fx::Reverb::PITCH].setValue(1.0f, true);
     m_reverb.parameters()[fx::Reverb::FEEDBACK].setValue(0.0f, true);
