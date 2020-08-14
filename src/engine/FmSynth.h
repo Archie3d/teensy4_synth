@@ -55,8 +55,7 @@ public:
 
 private:
 
-    void tick(float& l, float& r);
-
+    float m_gain;
     Envelope m_adsr;
     float m_modPhase;
 

@@ -23,7 +23,13 @@ Envelope::Envelope()
 {
 }
 
-void Envelope::trigger (const Envelope::Trigger& trigger)
+void Envelope::trigger(const Envelope::Trigger& trig)
+{
+    prepare(trig);
+    trigger();
+}
+
+void Envelope::prepare(const Envelope::Trigger& trigger)
 {
     sustainLevel = trigger.sustain;
 
@@ -39,7 +45,10 @@ void Envelope::trigger (const Envelope::Trigger& trigger)
     releaseRate = trigger.release * globals::SAMPLE_RATE;
     releaseCoef = calculate2 (releaseRate, logDecayReleaseTR);
     releaseBase = -DecayReleaseTargetRatio * (1.0f - releaseCoef);
+}
 
+void Envelope::trigger()
+{
     currentState = Attack;
     currentLevel = 0.0f;
 }
@@ -49,7 +58,7 @@ void Envelope::release()
     currentState = Release;
 }
 
-void Envelope::release (float t)
+void Envelope::release(float t)
 {
     releaseRate = t * globals::SAMPLE_RATE;
     releaseCoef = calculate2 (releaseRate, logDecayReleaseTR);

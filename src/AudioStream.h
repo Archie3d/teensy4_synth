@@ -167,8 +167,6 @@ protected:
 		if (! update_pending) {
 			update_pending = true;
 			NVIC_SET_PENDING(IRQ_SOFTWARE);
-		} else {
-			Serial.printf("Update pending!\r\n");
 		}
 	}
 	friend void software_isr(void);

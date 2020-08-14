@@ -31,9 +31,11 @@ public:
 
     State state() const noexcept { return currentState; }
 
-    void trigger (const Trigger& trigger);
+    void trigger(const Trigger& trigger);
+    void prepare(const Trigger& trigger);
+    void trigger();
     void release();
-    void release (float t);
+    void release(float t);
 
     float next();
 

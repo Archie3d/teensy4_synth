@@ -6,12 +6,19 @@
 #include "lut_dphase.inc"
 #include "lut_velocity.inc"
 
+#define LUT_INTERPOLATE 0
+
 float sineLUT(float p)
 {
     const float pp = p * float (SINE_SIZE);
     const int k = (int)pp;
+
+#if LUT_INTERPOLATE
     const float frac = pp - (float)k;
     return math::lerp(SINE[k], SINE[k+1], frac);
+#else
+    return SINE[k];
+#endif
 }
 
 //==============================================================================
@@ -21,11 +28,17 @@ constexpr float modulationDepth = 2e-4f;
 
 FmVoice::FmVoice()
 {
+    // Prepare static envelopes
+    m_operator[1].aeg.prepare({0.0f, 6.0f, 0.2f, 0.5f});
+    m_operator[3].aeg.prepare({0.0f, 4.0f, 0.3f, 0.5f});
+    m_operator[5].aeg.prepare({0.0f, 1.0f, 0.0f, 0.0f});
 }
 
 void FmVoice::trigger (int note, int velocity)
 {
     Voice::trigger(note, velocity);
+
+    m_gain = 0.2f + 0.8f * VELOCITY_CURVE[velocity];
 
     m_modPhase = 0.0f;
 
@@ -39,20 +52,19 @@ void FmVoice::trigger (int note, int velocity)
     m_operator[0].aeg.trigger({attack, decay, 0.0f, 1.0f});
 
     m_operator[1].phaseInc = 14.0f * dp;
-    m_operator[1].aeg.trigger({0.0f, 6.0f, 0.2f, 0.5f});
+    m_operator[1].aeg.trigger();
 
     m_operator[2].phaseInc = dp;
     m_operator[2].aeg.trigger({attack, decay, 0.0f, 1.0f});
 
     m_operator[3].phaseInc = 1.0f * dp;
-    m_operator[3].aeg.trigger({0.0f, 4.0f, 0.3f, 0.5f});
+    m_operator[3].aeg.trigger();
 
     m_operator[4].phaseInc = dp;
     m_operator[4].aeg.trigger({attack, 3.0f, 0.0f, 1.0f});
 
     m_operator[5].phaseInc = dp;
-    m_operator[5].aeg.trigger({0.0f, 1.0f, 0.0f, 0.0f});
-
+    m_operator[5].aeg.trigger();
 }
 
 void FmVoice::release()
@@ -73,15 +85,33 @@ void FmVoice::reset()
 
 void FmVoice::process(float* outL, float* outR, size_t numFrames)
 {
-    const float gain = 0.2f + 0.8f * VELOCITY_CURVE[velocity()];
+    // Tone
+    constexpr float s = 0.0078125f;
+    const float tone = 2.0f * s * (*params)[FmInstrument::TONE].value();
+
+    // Modulation
+    const float modulation = modulationDepth * (*params)[FmInstrument::MODULATION].value();
 
     for (size_t i = 0; i < numFrames; ++i) {
-        float l = 0.0f;
-        float r = 0.0f;
-        tick(l, r);
+        const float m = modulation * sineLUT(m_modPhase);
 
-        outL[i] += l * gain;
-        outR[i] += r * gain;
+        float a = m_operator[0].tick(tone * (m_operator[1].tick()) + m);    
+        float b = m_operator[2].tick(tone * (m_operator[3].tick()) + m);
+        float c = m_operator[4].tick(tone * (m_operator[5].tick(s * m_operator[5].value)));
+        
+        // Update modulation phase
+        constexpr float modInc = modulationFrequency * globals::SAMPLE_RATE_R;
+        m_modPhase += modInc;
+
+        while (m_modPhase > 1.0f)
+            m_modPhase -= 1.0f;
+
+        // Mix operators
+        const float l = 0.04f * a + 0.06f * b + 0.01f * c;
+        const float r = 0.06f * a + 0.04f * b + 0.01f * c;
+
+        outL[i] += l * m_gain;
+        outR[i] += r * m_gain;
     }
 }
 
@@ -90,32 +120,6 @@ bool FmVoice::shouldRecycle()
     return m_operator[0].aeg.state() == Envelope::State::Off
         && m_operator[2].aeg.state() == Envelope::State::Off
         && m_operator[4].aeg.state() == Envelope::State::Off;
-}
-
-void FmVoice::tick(float& l, float &r)
-{
-    // Modulation
-    const float modAmp = (*params)[FmInstrument::MODULATION].value();
-    float m = modulationDepth * modAmp * sineLUT(m_modPhase);
-
-    constexpr float s = 0.0078125f;
-
-    const float st = 2.0f * s * (*params)[FmInstrument::TONE].value();
-
-    float a = m_operator[0].tick(st * (m_operator[1].tick()) + m);    
-    float b = m_operator[2].tick(st * (m_operator[3].tick()) + m);
-    float c = m_operator[4].tick(st * (m_operator[5].tick(s * m_operator[5].value)));
-    
-    // Update modulation phase
-    constexpr float modInc = modulationFrequency * globals::SAMPLE_RATE_R;
-    m_modPhase += modInc;
-
-    while (m_modPhase > 1.0f)
-        m_modPhase -= 1.0f;
-
-    // Mix operators
-    l = 0.04f * a + 0.06f * b + 0.01f * c;
-    r = 0.06f * a + 0.04f * b + 0.01f * c;
 }
 
 //==============================================================================
