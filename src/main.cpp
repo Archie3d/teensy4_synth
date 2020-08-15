@@ -85,7 +85,6 @@ extern "C" int main(void) {
     pinMode(13, OUTPUT);
 
     auto ts = millis();
-    bool toggle = false;
 
 	while (1) {
         usbMIDI.read();
@@ -93,17 +92,16 @@ extern "C" int main(void) {
 
         const auto t = millis() - ts;
 
-        if (t >= 500) {
-            digitalWriteFast(13, toggle ? HIGH : LOW);
+        const bool sense = (audioProcess.amplitudeL() + audioProcess.amplitudeR()) > 0.5f;
+        digitalWriteFast(13, sense);
 
-            if (toggle)
-                Serial.printf("DSP Load: %f%%  Voices: %d, L: %f R: %f\r\n",
-                    audioProcess.dspLoadPercent(),
-                    audioProcess.numActiveVoices(),
-                    audioProcess.amplitudeL(),
-                    audioProcess.amplitudeR());
+        if (t >= 1000) {
+            Serial.printf("DSP Load: %f%%  Voices: %d, L: %f R: %f\r\n",
+                audioProcess.dspLoadPercent(),
+                audioProcess.numActiveVoices(),
+                audioProcess.amplitudeL(),
+                audioProcess.amplitudeR());
 
-            toggle = !toggle;
             ts += t;
         }
     }

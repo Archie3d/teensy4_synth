@@ -21,7 +21,7 @@ void DelayLine::reset()
     ::memset(m_buffer.data(), 0, sizeof(float) * m_buffer.size());
 }
 
-void DelayLine::write (float x)
+void DelayLine::write(float x)
 {
     if (m_writeIndex == 0)
         m_writeIndex = m_buffer.size() - 1;
@@ -31,38 +31,44 @@ void DelayLine::write (float x)
     m_buffer[m_writeIndex] = x;
 }
 
-float DelayLine::read (float delay) const
+float DelayLine::read(float delay) const
 {
     int index = (int)floor(delay);
-    float frac = delay - (float)index;
+    const float frac = delay - (float)index;
 
-    index = (index + m_writeIndex) % (int) m_buffer.size();
+    index = (index + m_writeIndex) % (int)m_buffer.size();
     const auto a = m_buffer[index];
     const auto b = index < (int) m_buffer.size() - 1 ? m_buffer[index + 1] : m_buffer[0];
 
-    return math::lerp (a, b, frac);
+    return math::lerp(a, b, frac);
+}
+
+float DelayLine::readNoInterp(int delay) const
+{
+    const int index = (delay + m_writeIndex) % (int)m_buffer.size();
+    return m_buffer[index];
 }
 
 //==============================================================================
 
-void DCBlocker::updateSpec (DCBlocker::Spec&)
+void DCBlocker::updateSpec(DCBlocker::Spec&)
 {    
 }
 
-void DCBlocker::resetState (const DCBlocker::Spec& spec, DCBlocker::State& state)
+void DCBlocker::resetState(const DCBlocker::Spec& spec, DCBlocker::State& state)
 {
     state.x1 = 0.0f;
     state.y1 = 0.0f;
 }
 
-float DCBlocker::tick (const DCBlocker::Spec& spec, DCBlocker::State& state, float in)
+float DCBlocker::tick(const DCBlocker::Spec& spec, DCBlocker::State& state, float in)
 {
     state.y1 = in - state.x1 + spec.alpha * state.y1;
     state.x1 = in;
     return state.y1;
 }
 
-void DCBlocker::process (const DCBlocker::Spec& spec, DCBlocker::State& state, const float* in, float* out, size_t size)
+void DCBlocker::process(const DCBlocker::Spec& spec, DCBlocker::State& state, const float* in, float* out, size_t size)
 {
     float x = state.x1;
     float y = state.y1;
@@ -79,7 +85,7 @@ void DCBlocker::process (const DCBlocker::Spec& spec, DCBlocker::State& state, c
 
 //==============================================================================
 
-void BiquadFilter::updateSpec (BiquadFilter::Spec& spec)
+void BiquadFilter::updateSpec(BiquadFilter::Spec& spec)
 {
     float A = 0.0f;
 
@@ -195,12 +201,12 @@ void BiquadFilter::updateSpec (BiquadFilter::Spec& spec)
     spec.b[2] /= spec.a[0];
 }
 
-void BiquadFilter::resetState (const BiquadFilter::Spec&, BiquadFilter::State& state)
+void BiquadFilter::resetState(const BiquadFilter::Spec&, BiquadFilter::State& state)
 {
     ::memset (&state, 0, sizeof (state));
 }
 
-float BiquadFilter::tick (const Spec& spec, State& state, float in)
+float BiquadFilter::tick(const Spec& spec, State& state, float in)
 {
     const float x = in;
     const float y = spec.b[0] * x + spec.b[1] * state.x[0] + spec.b[2] * state.x[1]
@@ -215,7 +221,7 @@ float BiquadFilter::tick (const Spec& spec, State& state, float in)
 }
 
 
-void BiquadFilter::process (const Spec& spec, State& state, const float* in, float* out, size_t size)
+void BiquadFilter::process(const Spec& spec, State& state, const float* in, float* out, size_t size)
 {
     for (size_t i = 0; i < size; ++i)
     {
@@ -231,6 +237,5 @@ void BiquadFilter::process (const Spec& spec, State& state, const float* in, flo
         out[i] = y;
     }
 }
-
 
 } // namespace dsp

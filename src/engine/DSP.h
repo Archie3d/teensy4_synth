@@ -18,6 +18,7 @@ public:
     void reset();
     void write(float x);
     float read(float delay) const;
+    float readNoInterp(int delay) const;
 
     size_t size() const { return m_buffer.size(); }
 
@@ -128,14 +129,9 @@ struct AllPassFilter
 
     inline static float tick(const Spec& spec, State& state, float x)
     {
-        float output;
-        float bufOut;
-
-        bufOut = state.buffer[state.index];
-
-        output = bufOut - x;
+        float bufOut = state.buffer[state.index];
+        float output = bufOut - x;
         state.buffer[state.index] = x + (bufOut * spec.feedback);
-
         state.index = (state.index + 1) % state.buffer.size();
 
         return output;
@@ -182,13 +178,9 @@ struct CombFilter
     inline static float tick(const Spec& spec, State& state, float x)
     {
         float output = state.buffer[state.index];
-
         state.filterStore = output * (1.0f - spec.damp) + state.filterStore * spec.damp;
-
-        state.buffer[state.index] = x + state.filterStore * spec.feedback;
-
-        if (++state.index >= (int) state.buffer.size())
-            state.index = 0;
+        state.buffer[state.index] = x + state.filterStore * spec.feedback;   
+        state.index = (state.index + 1) % state.buffer.size();
 
         return output;
     }
@@ -258,7 +250,7 @@ struct Reverb
         typename AllPassFilter<allPassTuning4>::State allPass4;
     };
 
-    static void updateSpec (Spec& spec)
+    static void updateSpec(Spec& spec)
     {
         spec.comb1.feedback = spec.roomsize;
         spec.comb2.feedback = spec.roomsize;
@@ -284,43 +276,43 @@ struct Reverb
         spec.allPass4.feedback = 0.5f;
     }
 
-    static void resetState (const Spec& spec, State& state)
+    static void resetState(const Spec& spec, State& state)
     {
-        CombFilter<combTuning1>::resetState (spec.comb1, state.comb1);
-        CombFilter<combTuning2>::resetState (spec.comb2, state.comb2);
-        CombFilter<combTuning3>::resetState (spec.comb3, state.comb3);
-        CombFilter<combTuning4>::resetState (spec.comb4, state.comb4);
-        CombFilter<combTuning5>::resetState (spec.comb5, state.comb5);
-        CombFilter<combTuning6>::resetState (spec.comb6, state.comb6);
-        CombFilter<combTuning7>::resetState (spec.comb7, state.comb7);
-        CombFilter<combTuning8>::resetState (spec.comb8, state.comb8);
+        CombFilter<combTuning1>::resetState(spec.comb1, state.comb1);
+        CombFilter<combTuning2>::resetState(spec.comb2, state.comb2);
+        CombFilter<combTuning3>::resetState(spec.comb3, state.comb3);
+        CombFilter<combTuning4>::resetState(spec.comb4, state.comb4);
+        CombFilter<combTuning5>::resetState(spec.comb5, state.comb5);
+        CombFilter<combTuning6>::resetState(spec.comb6, state.comb6);
+        CombFilter<combTuning7>::resetState(spec.comb7, state.comb7);
+        CombFilter<combTuning8>::resetState(spec.comb8, state.comb8);
 
-        AllPassFilter<allPassTuning1>::resetState (spec.allPass1, state.allPass1);
-        AllPassFilter<allPassTuning2>::resetState (spec.allPass2, state.allPass2);
-        AllPassFilter<allPassTuning3>::resetState (spec.allPass3, state.allPass3);
-        AllPassFilter<allPassTuning4>::resetState (spec.allPass4, state.allPass4);
+        AllPassFilter<allPassTuning1>::resetState(spec.allPass1, state.allPass1);
+        AllPassFilter<allPassTuning2>::resetState(spec.allPass2, state.allPass2);
+        AllPassFilter<allPassTuning3>::resetState(spec.allPass3, state.allPass3);
+        AllPassFilter<allPassTuning4>::resetState(spec.allPass4, state.allPass4);
     }
 
-    static void process (const Spec& spec, State& state, const float* in, float* out, size_t size)
+    static void process(const Spec& spec, State& state, const float* in, float* out, size_t size)
     {
         for (size_t i = 0; i < size; ++i) {
             const auto x = in[i];
 
-            float y = CombFilter<combTuning1>::tick (spec.comb1, state.comb1, x);
-            y += CombFilter<combTuning2>::tick (spec.comb2, state.comb2, x);
-            y += CombFilter<combTuning3>::tick (spec.comb3, state.comb3, x);
-            y += CombFilter<combTuning4>::tick (spec.comb4, state.comb4, x);
-            y += CombFilter<combTuning5>::tick (spec.comb5, state.comb5, x);
-            y += CombFilter<combTuning6>::tick (spec.comb6, state.comb6, x);
-            y += CombFilter<combTuning7>::tick (spec.comb7, state.comb7, x);
-            y += CombFilter<combTuning8>::tick (spec.comb8, state.comb8, x);
+            float y = CombFilter<combTuning1>::tick(spec.comb1, state.comb1, x);
+            y += CombFilter<combTuning2>::tick(spec.comb2, state.comb2, x);
+            y += CombFilter<combTuning3>::tick(spec.comb3, state.comb3, x);
+            y += CombFilter<combTuning4>::tick(spec.comb4, state.comb4, x);
+            y += CombFilter<combTuning5>::tick(spec.comb5, state.comb5, x);
+            y += CombFilter<combTuning6>::tick(spec.comb6, state.comb6, x);
+            y += CombFilter<combTuning7>::tick(spec.comb7, state.comb7, x);
+            y += CombFilter<combTuning8>::tick(spec.comb8, state.comb8, x);
 
             y *= 0.125f; // normalize due to x8 combs added together 1/8
 
-            y = AllPassFilter<allPassTuning1>::tick (spec.allPass1, state.allPass1, y);
-            y = AllPassFilter<allPassTuning2>::tick (spec.allPass2, state.allPass2, y);
-            y = AllPassFilter<allPassTuning3>::tick (spec.allPass3, state.allPass3, y);
-            y = AllPassFilter<allPassTuning4>::tick (spec.allPass4, state.allPass4, y);
+            y = AllPassFilter<allPassTuning1>::tick(spec.allPass1, state.allPass1, y);
+            y = AllPassFilter<allPassTuning2>::tick(spec.allPass2, state.allPass2, y);
+            y = AllPassFilter<allPassTuning3>::tick(spec.allPass3, state.allPass3, y);
+            y = AllPassFilter<allPassTuning4>::tick(spec.allPass4, state.allPass4, y);
 
             out[i] = y;
         }
